@@ -1,0 +1,96 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+  A web-component grid layout of filterable items.
+
+  Example:
+
+  ```html
+    <app-grid 
+      item-size="64">
+    </app-grid>
+  ```
+
+  @demo
+-->
+<dom-module id="app-grid">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      #grid {
+        position: relative;
+      }
+      #grid > div {
+        display: block;
+        position: absolute;
+        border: 1px solid gray;
+        transition: top 1s, left 1s;
+      }
+    </style>
+    <div id="grid">
+      <div>item1</div>
+      <div>item2</div>
+      <div>item3</div>
+      <div>item4</div>
+      <div>item5</div>
+      <div>item6</div>
+      <div>item7</div>
+      <div>item8</div>
+      <div>item9</div>
+      <div>item10</div>
+      <div>item11</div>
+      <div>item12</div>
+      <div>item13</div>
+      <div>item14</div>
+      <div>item15</div>
+      <div>item16</div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'app-grid',
+
+      properties: {
+        /**
+         * The rectangular size of each item in the grid
+         */
+        itemSize: {
+          type: Number,
+          value: 128
+          // TODO check if supplied size is positive
+        }
+      },
+
+      ready: function() {
+        var gridEl = Polymer.dom(this.$.grid);
+        
+        // TODO var items = this.items;          
+        var itemEls = gridEl.children;
+        for (var k = 0; k < itemEls.length; k++) {
+          var itemEl = itemEls[k];
+          itemEl.style.width = itemEl.style.height = this.itemSize + 'px';
+          itemEl.style.top = 0;
+          itemEl.style.left = 0;
+        }
+      },
+
+      attached: function() {
+        var gridEl = Polymer.dom(this.$.grid);
+        var itemEls = gridEl.children;
+
+        var width = gridEl.node.getBoundingClientRect().width;
+        var cols = Math.floor(width / this.itemSize);
+        var margin = (width - (cols * this.itemSize)) / 2;
+        
+        for (var k = 0; k < itemEls.length; k++) {
+          var itemEl = itemEls[k];
+          var colIdx = Math.floor(k % cols);
+          var rowIdx = Math.floor(k / cols);
+          itemEl.style.top = (this.itemSize * rowIdx) + 'px';
+          itemEl.style.left = (margin + (this.itemSize * colIdx)) + 'px';
+        }
+      }
+    });
+  </script>
+</dom-module>
