@@ -17,6 +17,7 @@
     <style>
       :host {
         display: block;
+        border: 1px solid red;
       }
       #grid {
         position: relative;
@@ -25,7 +26,7 @@
         display: block;
         position: absolute;
         border: 1px solid gray;
-        transition: top 1s, left 1s;
+        transition: top 1s, left 1s, opacity 1s;
       }
     </style>
     <div id="grid">
@@ -58,38 +59,52 @@
         itemSize: {
           type: Number,
           value: 128
-          // TODO check if supplied size is positive
+          // TODO check if supplied number is positive
+        },
+        /**
+         * The rectangular margin of each item in the grid
+         */
+        itemMargin: {
+          type: Number,
+          value: 16
+          // TODO check if supplied number is positive
         }
       },
 
       ready: function() {
-        var gridEl = Polymer.dom(this.$.grid);
-        
-        // TODO var items = this.items;          
-        var itemEls = gridEl.children;
-        for (var k = 0; k < itemEls.length; k++) {
-          var itemEl = itemEls[k];
+        var gridEl, itemEls, itemEl, k;
+
+        gridEl = Polymer.dom(this.$.grid);
+        itemEls = gridEl.children;
+        for (k = 0; k < itemEls.length; k++) {
+          itemEl = itemEls[k];
           itemEl.style.width = itemEl.style.height = this.itemSize + 'px';
-          itemEl.style.top = 0;
-          itemEl.style.left = 0;
+          itemEl.style.opacity = 0;
+          //itemEl.style.top = 0;
+          //itemEl.style.left = 0;
         }
       },
 
       attached: function() {
-        var gridEl = Polymer.dom(this.$.grid);
-        var itemEls = gridEl.children;
+        var gridEl, itemEls, boxSize, width, cols, offset, itemEl, colIdx, rowIdx, k;
 
-        var width = gridEl.node.getBoundingClientRect().width;
-        var cols = Math.floor(width / this.itemSize);
-        var margin = (width - (cols * this.itemSize)) / 2;
+        gridEl = Polymer.dom(this.$.grid);
+        itemEls = gridEl.children;
+
+        boxSize = this.itemSize + this.itemMargin;
+        width = gridEl.node.getBoundingClientRect().width;
+        cols = Math.floor(width / boxSize);
+        offset = (width - (cols * boxSize)) / 2;
         
-        for (var k = 0; k < itemEls.length; k++) {
-          var itemEl = itemEls[k];
-          var colIdx = Math.floor(k % cols);
-          var rowIdx = Math.floor(k / cols);
-          itemEl.style.top = (this.itemSize * rowIdx) + 'px';
-          itemEl.style.left = (margin + (this.itemSize * colIdx)) + 'px';
+        for (k = 0; k < itemEls.length; k++) {
+          itemEl = itemEls[k];
+          colIdx = Math.floor(k % cols);
+          rowIdx = Math.floor(k / cols);
+          itemEl.style.opacity = 1;
+          itemEl.style.top = (this.itemMargin + (boxSize * rowIdx)) + 'px';
+          itemEl.style.left = (offset + (boxSize * colIdx)) + 'px';
         }
+        gridEl.node.style.height = (this.itemMargin + (boxSize * (rowIdx + 1))) + 'px';
       }
     });
   </script>
