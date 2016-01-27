@@ -19,7 +19,8 @@
     "demo"
   ],
   "dependencies": {
-    "polymer": "~1.2.3"
+    "polymer": "~1.2.3",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.2"
   },
   "devDependencies": {
     "web-component-tester": "~4.1.0",

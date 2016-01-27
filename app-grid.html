@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <!--
   A web-component grid layout of filterable items.
 
@@ -52,6 +53,10 @@
     Polymer({
       is: 'app-grid',
 
+      behaviors: [
+        Polymer.IronResizableBehavior
+      ],
+
       properties: {
         /**
          * The rectangular size of each item in the grid
@@ -71,6 +76,12 @@
         }
       },
 
+
+      listeners: {
+        'iron-resize': '_onIronResize'
+      },
+
+
       ready: function() {
         var gridEl, itemEls, itemEl, k;
 
@@ -85,26 +96,45 @@
         }
       },
 
+
       attached: function() {
-        var gridEl, itemEls, boxSize, width, cols, offset, itemEl, colIdx, rowIdx, k;
+        this.async(this.notifyResize, 1);
+      },
+
+
+      get parent() {
+        if (this.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+          return this.parentNode.host;
+        }
+        return this.parentNode;
+      },
+
+
+      _onIronResize: function() {
+        var gridEl, gridWidth, itemEls, itemEl, itemWidth, itemHeight, 
+            rows, cols, colIdx, rowIdx, k,
+            paddingTop, paddingLeft;
 
         gridEl = Polymer.dom(this.$.grid);
         itemEls = gridEl.children;
 
-        boxSize = this.itemSize + this.itemMargin;
-        width = gridEl.node.getBoundingClientRect().width;
-        cols = Math.floor(width / boxSize);
-        offset = (width - (cols * boxSize)) / 2;
+        gridWidth = this.parent.offsetWidth;
+        itemWidth = itemHeight = this.itemSize + this.itemMargin;
+        cols = Math.floor(gridWidth / itemWidth);
+        paddingTop = this.itemMargin;
+        paddingLeft = Math.floor((gridWidth - ((cols * this.itemSize) + ((cols - 1) * this.itemMargin))) / 2);
         
         for (k = 0; k < itemEls.length; k++) {
           itemEl = itemEls[k];
           colIdx = Math.floor(k % cols);
           rowIdx = Math.floor(k / cols);
           itemEl.style.opacity = 1;
-          itemEl.style.top = (this.itemMargin + (boxSize * rowIdx)) + 'px';
-          itemEl.style.left = (offset + (boxSize * colIdx)) + 'px';
+          itemEl.style.top = ((rowIdx * itemHeight) + paddingTop) + 'px';
+          itemEl.style.left = ((colIdx * itemWidth) + paddingLeft) + 'px';
         }
-        gridEl.node.style.height = (this.itemMargin + (boxSize * (rowIdx + 1))) + 'px';
+        rows = (rowIdx + 1);
+
+        gridEl.node.style.height = ((rows * itemHeight) + paddingTop) + 'px';
       }
     });
   </script>
