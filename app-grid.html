@@ -18,7 +18,7 @@
     <style>
       :host {
         display: block;
-        border: 1px solid red;
+        border: 1px dashed red;
       }
       #grid {
         position: relative;
@@ -26,27 +26,50 @@
       #grid > div {
         display: block;
         position: absolute;
-        border: 1px solid gray;
         transition: top 1s, left 1s, opacity 1s;
+        box-sizing: border-box;
+      }
+      /* following will be provided from clients */
+      .item {
+        border-radius: 4px;
+        box-shadow: 4px 4px 8px lightgray;
+        border: 1px solid gray;
+        height: 100%;
+        text-align: center;
+        padding: 8px;
       }
     </style>
     <div id="grid">
-      <div>item1</div>
-      <div>item2</div>
-      <div>item3</div>
-      <div>item4</div>
-      <div>item5</div>
-      <div>item6</div>
-      <div>item7</div>
-      <div>item8</div>
-      <div>item9</div>
-      <div>item10</div>
-      <div>item11</div>
-      <div>item12</div>
-      <div>item13</div>
-      <div>item14</div>
-      <div>item15</div>
-      <div>item16</div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
+      <div>
+        <div class="item">.item</div>
+      </div>
     </div>
   </template>
   <script>
@@ -118,12 +141,12 @@
         gridEl = Polymer.dom(this.$.grid);
         itemEls = gridEl.children;
 
-        gridWidth = this.parent.offsetWidth;
+        gridWidth = +window.getComputedStyle(gridEl.node).width.replace('px',''); // this.parent.offsetWidth;
         itemWidth = itemHeight = this.itemSize + this.itemMargin;
         cols = Math.floor(gridWidth / itemWidth);
         paddingTop = this.itemMargin;
-        paddingLeft = Math.floor((gridWidth - ((cols * this.itemSize) + ((cols - 1) * this.itemMargin))) / 2);
-        
+        paddingLeft = (gridWidth - (cols * this.itemSize) - ((cols-1) * this.itemMargin)) / 2;
+     
         for (k = 0; k < itemEls.length; k++) {
           itemEl = itemEls[k];
           colIdx = Math.floor(k % cols);
