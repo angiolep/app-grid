@@ -20,83 +20,54 @@
         display: block;
         border: 1px dashed red;
       }
-      #grid {
+      .grid {
         position: relative;
       }
-      #grid > div {
+      .item {
         display: block;
         position: absolute;
         transition: top 1s, left 1s, opacity 1s;
         box-sizing: border-box;
-      }
-      /* following will be provided from clients */
-      .item {
-        border-radius: 4px;
-        box-shadow: 4px 4px 8px lightgray;
-        border: 1px solid gray;
-        height: 100%;
-        text-align: center;
-        padding: 8px;
+        @apply(--item-theme);
       }
     </style>
-    <div id="grid">
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-      <div>
-        <div class="item">.item</div>
-      </div>
-    </div>
+    <div id="grid" class="grid"></div>
   </template>
   <script>
+  ;!function() {
     Polymer({
       is: 'app-grid',
 
       behaviors: [
+        Polymer.Templatizer,
         Polymer.IronResizableBehavior
       ],
 
       properties: {
+        // TODO make use of a Custom Property for CSS Variable
         /**
-         * The rectangular size of each item in the grid
+         * The width and height in pixels of each item in the grid
          */
         itemSize: {
           type: Number,
           value: 128
-          // TODO check if supplied number is positive
         },
         /**
-         * The rectangular margin of each item in the grid
+         * The margin in pixels set around each item in the grid
          */
-        itemMargin: {
+        itemSpacing: {
           type: Number,
           value: 16
-          // TODO check if supplied number is positive
+        },
+        /**
+         * The array of items to layout in the grid
+         */
+        items: {
+          type: Array,
+          value: function() { return new Array(); },
+          observer: '_itemsChanged'
         }
+        // TODO animated
       },
 
 
@@ -106,22 +77,12 @@
 
 
       ready: function() {
-        var gridEl, itemEls, itemEl, k;
-
-        gridEl = Polymer.dom(this.$.grid);
-        itemEls = gridEl.children;
-        for (k = 0; k < itemEls.length; k++) {
-          itemEl = itemEls[k];
-          itemEl.style.width = itemEl.style.height = this.itemSize + 'px';
-          itemEl.style.opacity = 0;
-          //itemEl.style.top = 0;
-          //itemEl.style.left = 0;
-        }
+        // TODO this._itemsChanged();
       },
 
 
       attached: function() {
-        this.async(this.notifyResize, 1);
+        //this.async(this.notifyResize, 1);
       },
 
 
@@ -134,31 +95,69 @@
 
 
       _onIronResize: function() {
-        var gridEl, gridWidth, itemEls, itemEl, itemWidth, itemHeight, 
-            rows, cols, colIdx, rowIdx, k,
-            paddingTop, paddingLeft;
+        this._layout();
+      },
 
-        gridEl = Polymer.dom(this.$.grid);
-        itemEls = gridEl.children;
 
-        gridWidth = +window.getComputedStyle(gridEl.node).width.replace('px',''); // this.parent.offsetWidth;
-        itemWidth = itemHeight = this.itemSize + this.itemMargin;
-        cols = Math.floor(gridWidth / itemWidth);
-        paddingTop = this.itemMargin;
-        paddingLeft = (gridWidth - (cols * this.itemSize) - ((cols-1) * this.itemMargin)) / 2;
-     
-        for (k = 0; k < itemEls.length; k++) {
-          itemEl = itemEls[k];
-          colIdx = Math.floor(k % cols);
-          rowIdx = Math.floor(k / cols);
-          itemEl.style.opacity = 1;
-          itemEl.style.top = ((rowIdx * itemHeight) + paddingTop) + 'px';
-          itemEl.style.left = ((colIdx * itemWidth) + paddingLeft) + 'px';
+      _itemsChanged: function(newValue, oldValue) {
+        var userTemplate, item, gridEl;
+
+        if (newValue.length > 0) {
+          userTemplate = Polymer.dom(this).querySelector('template');
+          if (userTemplate) {
+            this.templatize(userTemplate);
+          } else {
+            console.warn('app-grid requires a template to be provided in light-dom');
+          }
+
+          gridEl = Polymer.dom(this.$.grid);
+          while(gridEl.firstChild) gridEl.removeChild(gridEl.firstChild);
+
+          for (k = 0; k < newValue.length; k++) {
+            var itemEl = document.createElement('div');
+            itemEl.classList.add('item');
+            // TODO make use of a Custom Property for CSS Variable
+            itemEl.style.width = itemEl.style.height = this.itemSize + 'px';
+            itemEl.style.opacity = 0;
+            //itemEl.style.top = 0;
+            //itemEl.style.left = 0;
+            gridEl.appendChild(itemEl);
+
+            userEl = this.stamp(null);
+            userEl.item = newValue[k];
+            itemEl.appendChild(userEl.root);
+          }
+          this._layout();
         }
-        rows = (rowIdx + 1);
+      },
 
-        gridEl.node.style.height = ((rows * itemHeight) + paddingTop) + 'px';
+
+      _layout: function() {
+        var gridEl, gridWidth, itemEls, itemEl, itemWidth, itemHeight, rows, cols, colIdx, rowIdx, k, paddingTop, paddingLeft;
+        gridEl = Polymer.dom(this.$.grid).node;
+        itemEls = Polymer.dom(gridEl).querySelectorAll('.item');
+        if (itemEls.length > 0) {
+
+          gridWidth = +window.getComputedStyle(gridEl).width.replace('px',''); // this.parent.offsetWidth;
+          itemWidth = itemHeight = this.itemSize + this.itemSpacing;
+          cols = Math.floor(gridWidth / itemWidth);
+          paddingTop = this.itemSpacing;
+          paddingLeft = (gridWidth - (cols * this.itemSize) - ((cols-1) * this.itemSpacing)) / 2;
+       
+          for (k = 0; k < itemEls.length; k++) {
+            itemEl = itemEls[k];
+            colIdx = Math.floor(k % cols);
+            rowIdx = Math.floor(k / cols);
+            itemEl.style.opacity = 1;
+            itemEl.style.top = ((rowIdx * itemHeight) + paddingTop) + 'px';
+            itemEl.style.left = ((colIdx * itemWidth) + paddingLeft) + 'px';
+          }
+          rows = (rowIdx + 1);
+
+          gridEl.style.height = ((rows * itemHeight) + paddingTop) + 'px';
+        }
       }
     });
+  }();
   </script>
 </dom-module>

@@ -5,17 +5,48 @@
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../app-grid.html">
   <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
-  <style>
+  
+  <style is="custom-style">
     .container {
-      border: 1px dotted blue;
+        border: 1px dotted blue;
+    }
+    app-grid {
+      --item-theme: {
+        border-radius: 4px;
+        box-shadow: 4px 4px 8px lightgray;
+        border: 1px solid gray;
+        height: 100%;
+        text-align: center;
+        padding: 8px;
+        box-sizing: border-box;
+      }
     }
   </style>
 </head>
 
 <body>
   <!-- <div class="container"> -->
-    <app-grid item-size="128" item-margin="32"></app-grid>
+    <app-grid items='["paolo","nicholas"]'>
+      <template>
+        <p>[[item]]</p>
+      </template>
+    </app-grid>
   <!-- </div> -->
+
+  <button id="set-items-button" onclick="demo.setItems()">Set items</button>
+
+  <script>
+    var demo = {
+      appGrid: document.querySelector('app-grid'),
+      setItems: function() {
+        var k, items = [];
+        for (k = 0; k < 100; k++) {
+          items[k] = "paolo" + k;
+        }
+        this.appGrid.items = items;
+      }
+    }
+  </script>
 </body>
 </html>
 
